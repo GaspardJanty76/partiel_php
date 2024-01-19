@@ -1,59 +1,54 @@
 <?php
-// answer.php
-
 require_once 'methodes/dbConnect.php';
 
 $pdoManager = new DBManager('partiel_php');
 $pdo = $pdoManager->getPDO();
 
-// Vérifier si question_id est défini dans l'URL
+$message = "";
+$afficherFormulaire = true;
+$pourcentageReussite = 0;
+
 if (isset($_GET['question_id'])) {
     $questionId = $_GET['question_id'];
 
-    // Récupérer les informations de la question depuis la base de données
     $stmt = $pdo->prepare("SELECT * FROM questions WHERE id = ? AND suppression = 0");
     $stmt->execute([$questionId]);
     $question = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Vérifier si la question existe
     if ($question) {
         $intitule = htmlspecialchars($question['intitule']);
         $reponseAttendue = $question['reponse'];
         $messageBonneReponse = htmlspecialchars($question['bonne_reponse']);
         $messageMauvaiseReponse = htmlspecialchars($question['mauvaise_reponse']);
 
-        // Initialiser le message à afficher
-        $message = "";
-
-        // Initialiser une variable pour indiquer si le formulaire doit être affiché
-        $afficherFormulaire = true;
-
-        // Vérifier si le formulaire a été soumis
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Envoyer une tentative totale à chaque réponse
+            $stmtUpdateTotal = $pdo->prepare("UPDATE questions SET tentatives_totales = tentatives_totales + 1 WHERE id = ?");
+            $stmtUpdateTotal->execute([$questionId]);
+
             $reponseUtilisateur = $_POST['reponse_utilisateur'];
 
-            // Mettre à jour les statistiques de la question
-            $stmtUpdate = $pdo->prepare("UPDATE questions SET tentatives_totales = tentatives_totales + 1 WHERE id = ?");
-            $stmtUpdate->execute([$questionId]);
-
+            // Si la réponse est correcte, envoyer une tentative réussie
             if ($reponseUtilisateur === $reponseAttendue) {
-                $message = $messageBonneReponse;
-                // Si la réponse est correcte, mettre à jour les statistiques
                 $stmtUpdateReussie = $pdo->prepare("UPDATE questions SET tentatives_reussies = tentatives_reussies + 1 WHERE id = ?");
                 $stmtUpdateReussie->execute([$questionId]);
-
-                // Calculer le pourcentage de réussite
-                $pourcentageReussite = ($question['tentatives_reussies'] / max($question['tentatives_totales'], 1)) * 100;
-
-                // Mettre à jour le pourcentage de réussite dans la base de données
-                $stmtUpdatePourcentage = $pdo->prepare("UPDATE questions SET pourcentage_reussite = ? WHERE id = ?");
-                $stmtUpdatePourcentage->execute([$pourcentageReussite, $questionId]);
-
-                // Si la réponse est correcte, ne pas afficher le formulaire
+                $message = $messageBonneReponse;
                 $afficherFormulaire = false;
             } else {
                 $message = $messageMauvaiseReponse;
             }
+
+            // Récupérer les valeurs mises à jour depuis la base de données
+            $stmtSelectValues = $pdo->prepare("SELECT tentatives_reussies, tentatives_totales FROM questions WHERE id = ?");
+            $stmtSelectValues->execute([$questionId]);
+            $values = $stmtSelectValues->fetch(PDO::FETCH_ASSOC);
+
+            // Calculer le pourcentage
+            $pourcentageReussite = ($values['tentatives_reussies'] / max($values['tentatives_totales'], 1)) * 100;
+
+            // Mettre à jour le pourcentage en base de données
+            $stmtUpdatePourcentage = $pdo->prepare("UPDATE questions SET pourcentage_reussite = ? WHERE id = ?");
+            $stmtUpdatePourcentage->execute([$pourcentageReussite, $questionId]);
         }
     } else {
         $message = "Question non trouvée.";
@@ -69,21 +64,8 @@ if (isset($_GET['question_id'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Répondre à la question</title>
-    <!-- Ajout des styles Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            padding: 20px;
-        }
-
-        h1 {
-            margin-bottom: 20px;
-        }
-
-        form {
-            margin-bottom: 20px;
-        }
-    </style>
+    <link rel="stylesheet" href="css/index.css">
 </head>
 <body>
     <div class="container">
@@ -102,9 +84,13 @@ if (isset($_GET['question_id'])) {
         <?php if (!empty($message)): ?>
             <p><?= $message ?></p>
         <?php endif; ?>
-    </div>
 
-    <!-- Ajout des scripts Bootstrap -->
+        <?php if (!$afficherFormulaire && isset($pourcentageReussite)): ?>
+            <div class="mt-3">
+                <p>Pourcentage de réussite : <?= round($pourcentageReussite, 2) ?>%</p>
+            </div>
+        <?php endif; ?>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
