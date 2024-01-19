@@ -22,13 +22,11 @@ if (isset($_GET['question_id'])) {
         $messageMauvaiseReponse = htmlspecialchars($question['mauvaise_reponse']);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Envoyer une tentative totale à chaque réponse
             $stmtUpdateTotal = $pdo->prepare("UPDATE questions SET tentatives_totales = tentatives_totales + 1 WHERE id = ?");
             $stmtUpdateTotal->execute([$questionId]);
 
             $reponseUtilisateur = $_POST['reponse_utilisateur'];
 
-            // Si la réponse est correcte, envoyer une tentative réussie
             if ($reponseUtilisateur === $reponseAttendue) {
                 $stmtUpdateReussie = $pdo->prepare("UPDATE questions SET tentatives_reussies = tentatives_reussies + 1 WHERE id = ?");
                 $stmtUpdateReussie->execute([$questionId]);
@@ -38,15 +36,12 @@ if (isset($_GET['question_id'])) {
                 $message = $messageMauvaiseReponse;
             }
 
-            // Récupérer les valeurs mises à jour depuis la base de données
             $stmtSelectValues = $pdo->prepare("SELECT tentatives_reussies, tentatives_totales FROM questions WHERE id = ?");
             $stmtSelectValues->execute([$questionId]);
             $values = $stmtSelectValues->fetch(PDO::FETCH_ASSOC);
 
-            // Calculer le pourcentage
             $pourcentageReussite = ($values['tentatives_reussies'] / max($values['tentatives_totales'], 1)) * 100;
 
-            // Mettre à jour le pourcentage en base de données
             $stmtUpdatePourcentage = $pdo->prepare("UPDATE questions SET pourcentage_reussite = ? WHERE id = ?");
             $stmtUpdatePourcentage->execute([$pourcentageReussite, $questionId]);
         }

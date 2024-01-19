@@ -6,7 +6,6 @@ $pdo = $pdoManager->getPDO();
 
 $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
 
-// Sélectionnez la feuille active
 $sheet = $spreadsheet->getActiveSheet();
 
 $sheet->setCellValue('A1', 'Intitulé de la question');
@@ -36,13 +35,10 @@ if (count($result) > 0) {
     }
 }
 
-// Nom du fichier Excel
 $filename = 'export_questions.xlsx';
 
-// Créez l'objet Writer pour Excel
 $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
 
-// Définissez le type de réponse pour le navigateur
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Content-Disposition: attachment;filename="' . $filename . '"');
 header('Cache-Control: max-age=0');
