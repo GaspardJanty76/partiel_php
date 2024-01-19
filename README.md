@@ -19,11 +19,13 @@ voici le lien de téléchargement : https://getcomposer.org/download/
 
 Une fois le composer installé entré ces lignes de commandes dans le terminal de votre projet :
 
-1- ```
+1- 
+`
 composer require phpoffice/phpspreadsheet
-```
+`
 
-2- ```
+2- 
+`
 composer install
-```
+`
  
