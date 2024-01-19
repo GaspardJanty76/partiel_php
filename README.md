@@ -23,9 +23,11 @@ Une fois le composer installé entré ces lignes de commandes dans le terminal d
 `
 composer require phpoffice/phpspreadsheet
 `
-
+Puis
 2- 
 `
 composer install
 `
+
+cela devrait vous avoir téléchargé un fichier JSON, un fichier LOCK et un dossier vendor !
  

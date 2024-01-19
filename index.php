@@ -3,13 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ajouter une question</title>
+    <title>Csscape Game</title>
     <link rel="stylesheet" href="css/index.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
     <div class="container">
-        <h1 class="mt-3">Ajouter une question</h1>
+        <div class="title">
+            <h1 class="mt-3" id="css">Css</h1>
+            <h1 class="mt-3">cape Game</h1>
+        </div>
+        <h3 class="mt-3">Ajouter une question</h1>
         <form method="post" action="methodes/createQuestion.php">
             <div class="mb-3">
                 <label for="intitule" class="form-label">Intitulé de la question:</label>
@@ -27,8 +31,13 @@
                 <label for="bonneReponseMessage" class="form-label">Message de bonne réponse:</label>
                 <input type="text" class="form-control" name="bonneReponseMessage" required>
             </div>
-            <button type="submit" class="btn btn-primary">Ajouter la question</button>
+            <div class="button-div">
+                <button type="submit" class="btn btn-primary">Ajouter la question</button>
+                <a href="methodes/export.php" class="btn btn-secondary">Télécharger le fichier Excel</a>
+            </div>
         </form>
+
+
 
         <h2 class="mt-3">Liste des questions</h2>
         <?php
@@ -40,6 +49,7 @@
             <ul>
                 <?php foreach ($questions as $question): ?>
                     <li>
+                        <hr>
                         <a href="answer.php?question_id=<?= $question['id'] ?>" class="question-link">
                             <?= htmlspecialchars($question['intitule']) ?>
                         </a>
