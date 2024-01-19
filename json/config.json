@@ -1,0 +1,6 @@
+{
+    "host": "adresse_de_votre_bdd",
+    "port": "port_de_votre_bdd",
+    "username": "utilisateur_de_votre_bdd",
+    "password": "mot_de_passe_de_votre_bdd"
+}
